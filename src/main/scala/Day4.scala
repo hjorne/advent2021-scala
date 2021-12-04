@@ -1,44 +1,43 @@
-type Board = Vector[Vector[Int]]
+type Board = Seq[Seq[Int]]
 
 @main
 def day4 =
   val (values, boards)      = parse4
   val winningBoardsTimeline = getWinningBoardsTimeline(values, boards)
-  val sortedWinningIndices  = winningBoardsTimeline.keys.toVector.sorted
-  val firstBoard      = winningBoardsTimeline(sortedWinningIndices.head).head
-  val lastBoard       = winningBoardsTimeline(sortedWinningIndices.last).head
-  val valuesWhenFirst = values.take(sortedWinningIndices.head)
-  val valuesWhenLast  = values.take(sortedWinningIndices.last)
-  val firstBoardScore = scoreBoard(valuesWhenFirst, firstBoard)
-  val lastBoardScore  = scoreBoard(valuesWhenLast, lastBoard)
+  val firstBoardScore       = winningBoardsTimeline.head
+  val lastBoardScore        = winningBoardsTimeline.last
 
   assert(firstBoardScore == 46920)
   assert(lastBoardScore == 12635)
 
 def getWinningBoardsTimeline(
-    values: Vector[Int],
-    boards: Vector[Board]
-): Map[Int, Set[Board]] =
-  values.indices.foldLeft(Map.empty) { case (winningBoardsTimeline, i) ⇒
-    val calledValues        = values.take(i).toSet
-    val previouslyWonBoards = winningBoardsTimeline.values.flatten.toSet
-    val newlyWonBoards = boards.filter { board ⇒
-      isWinningBoard(calledValues, board) &&
-      !previouslyWonBoards.contains(board)
-    }.toSet
-    if newlyWonBoards.nonEmpty then winningBoardsTimeline + (i → newlyWonBoards)
-    else winningBoardsTimeline
-  }
+    values: Seq[Int],
+    boards: Seq[Board]
+): Seq[Int] =
+  values.indices
+    .foldLeft(Seq.empty[(Int, Board)]) { case (winningBoardsTimeline, i) ⇒
+      val previouslyWonBoards = winningBoardsTimeline.map(_._2).toSet
+      val newlyWonBoards = boards
+        .filter { board ⇒
+          isWinningBoard(values.take(i).toSet, board) &&
+          !previouslyWonBoards.contains(board)
+        }
+        .map(board ⇒ (scoreBoard(values.take(i), board), board))
+        .toSet
+      if newlyWonBoards.nonEmpty then winningBoardsTimeline ++ newlyWonBoards
+      else winningBoardsTimeline
+    }
+    .map(_._1)
 
 def isWinningBoard(calledValues: Set[Int], board: Board): Boolean =
   board.exists(_.forall(calledValues.contains)) ||
     board.transpose.exists(_.forall(calledValues.contains))
 
-def scoreBoard(calledValues: Vector[Int], board: Board): Int =
+def scoreBoard(calledValues: Seq[Int], board: Board): Int =
   val calledValuesSet = calledValues.toSet
   board.flatten.filterNot(calledValuesSet.contains).sum * calledValues.last
 
-def parse4: (Vector[Int], Vector[Board]) =
+def parse4: (Seq[Int], Seq[Board]) =
   val input  = getInputString(4).split("\n\n").toList
   val values = input.head.split(",").toVector.map(_.toInt)
 
