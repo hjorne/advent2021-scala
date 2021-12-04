@@ -5,7 +5,7 @@ enum Dir:
 
 @main
 def day2 =
-  val input                 = parse(getInput(2))
+  val input                 = parse2(getInput(2))
   val (horizontal1, depth1) = navigateWithoutAim(input)
   val (horizontal2, depth2) = navigateWithAim(input)
 
@@ -30,7 +30,7 @@ def navigateWithAim(input: Vector[Dir]): (Int, Int) =
   }
   (horizontal, depth)
 
-def parse(lines: Vector[String]): Vector[Dir] =
+def parse2(lines: Vector[String]): Vector[Dir] =
   val forward = raw"forward (\d+)".r
   val down    = raw"down (\d+)".r
   val up      = raw"up (\d+)".r
